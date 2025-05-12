@@ -1,10 +1,11 @@
 import React, { useState, useEffect } from 'react';
 import { Link, NavLink } from 'react-router-dom';
-import { Bus, Menu, X } from 'lucide-react';
+import { Bus, Menu, X, LogIn, UserPlus } from 'lucide-react';
 
 const Navbar: React.FC = () => {
   const [isMenuOpen, setIsMenuOpen] = useState(false);
   const [isScrolled, setIsScrolled] = useState(false);
+  const [isAuthenticated, setIsAuthenticated] = useState(false); // TODO: Replace with actual auth state
 
   useEffect(() => {
     const handleScroll = () => {
@@ -29,6 +30,11 @@ const Navbar: React.FC = () => {
         ? 'text-primary-600 font-medium'
         : 'text-neutral-700 hover:text-primary-600'
     }`;
+
+  const handleLogout = () => {
+    // TODO: Implement logout logic
+    setIsAuthenticated(false);
+  };
 
   return (
     <header
@@ -67,11 +73,32 @@ const Navbar: React.FC = () => {
           </NavLink>
         </div>
 
-        {/* CTA Button */}
-        <div className="hidden md:block">
-          <Link to="/tickets" className="btn btn-primary">
-            Get a Ticket
-          </Link>
+        {/* Authentication & CTA */}
+        <div className="hidden md:flex items-center gap-4">
+          {isAuthenticated ? (
+            <>
+              <button 
+                onClick={handleLogout} 
+                className="btn btn-outline"
+              >
+                Logout
+              </button>
+              <Link to="/tickets" className="btn btn-primary">
+                Get a Ticket
+              </Link>
+            </>
+          ) : (
+            <>
+              <Link to="/auth/signin" className="btn btn-outline flex items-center gap-2">
+                <LogIn className="w-4 h-4" />
+                Sign In
+              </Link>
+              <Link to="/auth/signup" className="btn btn-primary flex items-center gap-2">
+                <UserPlus className="w-4 h-4" />
+                Get Started
+              </Link>
+            </>
+          )}
         </div>
 
         {/* Mobile Menu Button */}
@@ -127,15 +154,54 @@ const Navbar: React.FC = () => {
           >
             Help
           </NavLink>
-          <div className="mt-4">
-            <Link
-              to="/tickets"
-              className="btn btn-primary w-full text-center"
-              onClick={() => setIsMenuOpen(false)}
-            >
-              Get a Ticket
-            </Link>
-          </div>
+
+          {/* Mobile Authentication Links */}
+          {isAuthenticated ? (
+            <>
+              <button
+                onClick={() => {
+                  handleLogout();
+                  setIsMenuOpen(false);
+                }}
+                className="btn btn-outline w-full mt-4"
+              >
+                Logout
+              </button>
+            </>
+          ) : (
+            <>
+              <div className="mt-4 grid grid-cols-2 gap-3">
+                <Link
+                  to="/auth/signin"
+                  className="btn btn-outline flex items-center justify-center gap-2"
+                  onClick={() => setIsMenuOpen(false)}
+                >
+                  <LogIn className="w-4 h-4" />
+                  Sign In
+                </Link>
+                <Link
+                  to="/auth/signup"
+                  className="btn btn-primary flex items-center justify-center gap-2"
+                  onClick={() => setIsMenuOpen(false)}
+                >
+                  <UserPlus className="w-4 h-4" />
+                  Get Started
+                </Link>
+              </div>
+            </>
+          )}
+
+          {isAuthenticated && (
+            <div className="mt-4">
+              <Link
+                to="/tickets"
+                className="btn btn-primary w-full text-center"
+                onClick={() => setIsMenuOpen(false)}
+              >
+                Get a Ticket
+              </Link>
+            </div>
+          )}
         </div>
       </div>
     </header>

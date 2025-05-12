@@ -2,41 +2,101 @@ import React, { useState } from 'react';
 import { MessageCircle, X, Send } from 'lucide-react';
 import { motion, AnimatePresence } from 'framer-motion';
 
+interface Message {
+  text: string;
+  sender: 'user' | 'bot';
+  type?: 'greeting' | 'service' | 'smalltalk' | 'default'; // Allowing 'type' to be one of these values
+}
+
+const initialBotGreeting: Message = {
+  text: "Hi there! I'm your BusTrack AI Assistant. Ready to make your public transit experience awesome! 🚌✨",
+  sender: 'bot',
+  type: 'greeting', // Ensure the greeting is assigned to 'greeting' type
+};
+
 const ChatbotWidget: React.FC = () => {
   const [isOpen, setIsOpen] = useState(false);
-  const [messages, setMessages] = useState<{ text: string; sender: 'user' | 'bot' }[]>([
-    { text: 'Hi there! How can I help you with bus tracking or ticketing today?', sender: 'bot' },
-  ]);
+  const [messages, setMessages] = useState<Message[]>([initialBotGreeting]);
   const [inputValue, setInputValue] = useState('');
 
-  const toggleChat = () => {
-    setIsOpen(!isOpen);
+  const botKnowledge = [
+    {
+      keywords: ['hi', 'hello', 'hey'],
+      responses: [
+        'Hi there! Welcome to BusTrack. How can I help you today?',
+        'Hello! I\'m your BusTrack AI Assistant. What can I do for you?',
+      ],
+      type: 'greeting' as const, // Make sure the type is strongly typed
+    },
+    {
+      keywords: ['thank you', 'thanks'],
+      responses: [
+        'You\'re welcome! Happy to help anytime.',
+        'My pleasure! That\'s what I\'m here for.',
+      ],
+      type: 'smalltalk' as const, // Strongly typed as 'smalltalk'
+    },
+    {
+      keywords: ['routes', 'route'],
+      responses: [
+        'BusTrack currently supports all major city bus routes, including routes 101-505.',
+        'You can find our full route list in the Routes section.',
+      ],
+      type: 'service' as const, // Strongly typed as 'service'
+    },
+  ];
+
+  const findBotResponse = (userMessage: string): Message => {
+    const normalizedMessage = userMessage.toLowerCase().trim();
+
+    // Find a matching response based on keywords
+    for (const knowledge of botKnowledge) {
+      if (knowledge.keywords.some(keyword => normalizedMessage.includes(keyword))) {
+        return {
+          text: knowledge.responses[Math.floor(Math.random() * knowledge.responses.length)],
+          sender: 'bot',
+          type: knowledge.type, // Ensure it's the correct type
+        };
+      }
+    }
+
+    // Default message if no match found
+    return {
+      text: "I'm sorry, I didn't quite catch that. Could you please rephrase?",
+      sender: 'bot',
+      type: 'default', // Ensure 'default' is a valid type
+    };
   };
 
   const handleSendMessage = (e: React.FormEvent) => {
     e.preventDefault();
     if (!inputValue.trim()) return;
 
-    // Add user message
-    setMessages([...messages, { text: inputValue, sender: 'user' }]);
+    const userMessage: Message = {
+      text: inputValue,
+      sender: 'user',
+      type: 'default', // Always 'default' for user messages
+    };
+    setMessages(prev => [...prev, userMessage]);
     setInputValue('');
 
-    // Simulate bot response
     setTimeout(() => {
-      const botResponses = [
-        "I can help you track your bus or purchase a ticket. What would you like to do?",
-        "To track your bus, go to the 'Track' page and enter your route number.",
-        "You can purchase a ticket by going to the 'Tickets' page and following the instructions.",
-        "Need more help? Check out our 'Help' section for FAQs.",
-      ];
-      
-      const randomResponse = botResponses[Math.floor(Math.random() * botResponses.length)];
-      setMessages(prev => [...prev, { text: randomResponse, sender: 'bot' }]);
-    }, 1000);
+      const botResponse = findBotResponse(inputValue);
+      setMessages(prev => [...prev, botResponse]);
+    }, 800);
+  };
+
+  const toggleChat = () => {
+    setIsOpen(!isOpen);
+  };
+
+  const handleClearChat = () => {
+    // Clears all messages and resets the initial bot greeting
+    setMessages([initialBotGreeting]);
   };
 
   return (
-    <div className="chatbot-widget">
+    <div className="chatbot-widget fixed bottom-4 right-4 z-50">
       <AnimatePresence>
         {isOpen && (
           <motion.div
@@ -44,57 +104,74 @@ const ChatbotWidget: React.FC = () => {
             animate={{ opacity: 1, y: 0, scale: 1 }}
             exit={{ opacity: 0, y: 20, scale: 0.95 }}
             transition={{ duration: 0.2 }}
-            className="bg-white rounded-lg shadow-lg w-[320px] sm:w-[350px] h-[450px] mb-4 flex flex-col overflow-hidden"
+            className="bg-white rounded-lg shadow-xl w-full max-w-xs sm:max-w-sm h-[400px] sm:h-[440px] mb-2 flex flex-col overflow-hidden"
           >
-            {/* Chat Header */}
-            <div className="bg-primary-600 text-white p-4 flex justify-between items-center">
+            {/* Header */}
+            <div className="bg-primary-600 text-white p-3 flex justify-between items-center">
               <div className="flex items-center gap-2">
-                <MessageCircle size={20} />
-                <h3 className="font-medium">BusTrack Assistant</h3>
+                <MessageCircle size={18} />
+                <h3 className="font-bold text-sm">BusTrack AI</h3>
               </div>
-              <button
-                onClick={toggleChat}
-                className="text-white hover:text-neutral-200 transition"
-                aria-label="Close chat"
-              >
-                <X size={20} />
-              </button>
-            </div>
-
-            {/* Chat Messages */}
-            <div className="flex-1 p-4 overflow-y-auto bg-neutral-50">
-              {messages.map((message, index) => (
-                <div
-                  key={index}
-                  className={`mb-3 ${
-                    message.sender === 'user' ? 'text-right' : 'text-left'
-                  }`}
+              <div className="flex items-center gap-2">
+                <motion.button
+                  whileHover={{ scale: 1.05 }}
+                  whileTap={{ scale: 0.95 }}
+                  onClick={handleClearChat}
+                  className="text-xs font-semibold border border-white px-2 py-0.5 rounded bg-white/10 hover:bg-white/20 transition duration-150"
                 >
-                  <div
-                    className={`inline-block px-4 py-2 rounded-lg ${
-                      message.sender === 'user'
-                        ? 'bg-primary-600 text-white'
-                        : 'bg-white text-neutral-800 border border-neutral-200'
-                    }`}
-                  >
-                    {message.text}
-                  </div>
-                </div>
-              ))}
+                  Clear
+                </motion.button>
+                <button
+                  onClick={toggleChat}
+                  className="text-white hover:text-neutral-200 transition"
+                  aria-label="Close chat"
+                >
+                  <X size={16} />
+                </button>
+              </div>
             </div>
 
-            {/* Chat Input */}
-            <form onSubmit={handleSendMessage} className="p-3 border-t border-neutral-200 flex gap-2">
+            {/* Messages */}
+            <div className="flex-1 p-2 overflow-y-auto bg-neutral-50 space-y-2">
+              <AnimatePresence>
+                {messages.map((message, index) => (
+                  <motion.div
+                    key={index}
+                    initial={{ opacity: 0, y: 10 }}
+                    animate={{ opacity: 1, y: 0 }}
+                    exit={{ opacity: 0, y: 10 }}
+                    transition={{ duration: 0.2 }}
+                    className={`flex ${message.sender === 'user' ? 'justify-end' : 'justify-start'}`}
+                  >
+                    <div
+                      className={`inline-block max-w-[85%] px-3 py-1.5 rounded-lg text-sm ${
+                        message.sender === 'user'
+                          ? 'bg-primary-600 text-white'
+                          : 'bg-white text-neutral-800 border border-neutral-200'
+                      }`}
+                    >
+                      {message.text}
+                    </div>
+                  </motion.div>
+                ))}
+              </AnimatePresence>
+            </div>
+
+            {/* Input */}
+            <form
+              onSubmit={handleSendMessage}
+              className="p-3 border-t border-neutral-200 flex gap-2 items-center"
+            >
               <input
                 type="text"
                 value={inputValue}
                 onChange={(e) => setInputValue(e.target.value)}
-                placeholder="Type your message..."
-                className="input flex-1 text-sm"
+                placeholder="Chat with BusTrack AI..."
+                className="flex-grow p-3 text-base border rounded px-4 py-2"
               />
               <button
                 type="submit"
-                className="p-2 bg-primary-600 text-white rounded-md hover:bg-primary-700 transition"
+                className="p-2 bg-primary-600 text-white rounded-md hover:bg-primary-700 transition flex items-center justify-center"
                 aria-label="Send message"
               >
                 <Send size={18} />
@@ -104,15 +181,15 @@ const ChatbotWidget: React.FC = () => {
         )}
       </AnimatePresence>
 
-      {/* Chat Button */}
+      {/* Floating Button */}
       <motion.button
         whileHover={{ scale: 1.05 }}
         whileTap={{ scale: 0.95 }}
         onClick={toggleChat}
         className="w-14 h-14 rounded-full bg-primary-600 text-white flex items-center justify-center shadow-lg hover:bg-primary-700 transition"
-        aria-label={isOpen ? "Close chat" : "Open chat"}
+        aria-label={isOpen ? 'Close chat' : 'Open chat'}
       >
-        {isOpen ? <X size={24} /> : <MessageCircle size={24} />}
+        {isOpen ? <X size={28} /> : <MessageCircle size={28} />}
       </motion.button>
     </div>
   );

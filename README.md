@@ -6,7 +6,7 @@
 
 BusTrack is a modern web application that revolutionizes the way users interact with public transportation. With real-time bus tracking and seamless online ticket booking, BusTrack eliminates the inconvenience of waiting at bus stops and handling cash payments.
 
-[View Live Demo]([https://deluxe-gelato-c5b2e3.netlify.app/])
+[View Live Demo](https://deluxe-gelato-c5b2e3.netlify.app/)
 
 ## Features
 

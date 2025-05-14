@@ -1,6 +1,7 @@
 # BusTrack
 
-![BusTrack Logo](https://images.pexels.com/photos/2902716/pexels-photo-2902716.jpeg?auto=compress&cs=tinysrgb&w=1260&h=750&dpr=2](https://www.pexels.com/photo/white-bus-on-road-near-cliff-1178448/)
+![BusTrack](https://github.com/user-attachments/assets/28e5f65c-bea0-4f81-866b-abff70dcc047)
+
 
 ## About BusTrack
 

@@ -1,6 +1,6 @@
 # BusTrack
 
-![BusTrack Logo](https://images.pexels.com/photos/2433291/pexels-photo-2433291.jpeg?auto=compress&cs=tinysrgb&w=1260&h=750&dpr=2).
+![BusTrack Logo](https://images.pexels.com/photos/2902716/pexels-photo-2902716.jpeg?auto=compress&cs=tinysrgb&w=1260&h=750&dpr=2)
 
 ## About BusTrack
 
